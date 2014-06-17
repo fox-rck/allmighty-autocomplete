@@ -11,12 +11,13 @@ app.directive('autocomplete', function() {
       searchParam: '=ngModel',
       suggestions: '=data',
       onType: '=onType',
-      onSelect: '=onSelect'
+      onSelect: '=onSelect',
+      filterProperty: '=filterProperty'
     },
     controller: ['$scope', function($scope){
       // the index of the suggestions that's currently selected
       $scope.selectedIndex = -1;
-
+      $scope.objectProperty = $scope.filterProperty || '';
       // set new index
       $scope.setIndex = function(i){
         $scope.selectedIndex = parseInt(i);
@@ -36,7 +37,6 @@ app.directive('autocomplete', function() {
 
       // autocompleting drop down on/off
       $scope.completing = false;
-
       // starts autocompleting on typing in something
       $scope.$watch('searchParam', function(newValue, oldValue){
         if (oldValue === newValue) {
@@ -79,8 +79,8 @@ app.directive('autocomplete', function() {
       // selecting a suggestion with RIGHT ARROW or ENTER
       $scope.select = function(suggestion){
         if(suggestion){
-          $scope.searchParam = suggestion;
-          $scope.searchFilter = suggestion;
+            $scope.searchParam = suggestion[$scope.objectProperty];
+            $scope.searchFilter = suggestion[$scope.objectProperty];
           if($scope.onSelect)
             $scope.onSelect(suggestion);
         }
@@ -224,7 +224,7 @@ app.directive('autocomplete', function() {
 });
 
 app.filter('highlight', ['$sce', function ($sce) {
-  return function (input, searchParam) {
+    return function (input, searchParam) {
     if (typeof input === 'function') return '';
     if (searchParam) {
       var words = '(' +
@@ -233,7 +233,7 @@ app.filter('highlight', ['$sce', function ($sce) {
           ')',
           exp = new RegExp(words, 'gi');
       if (words.length) {
-        input = input.replace(exp, "<span class=\"highlight\">$1</span>");
+          input = input.replace(exp, "<span class=\"highlight\">$1</span>");
       }
     }
     return $sce.trustAsHtml(input);
